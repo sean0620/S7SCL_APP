@@ -1,0 +1,91 @@
+FUNCTION FC1006 : VOID
+KNOW_HOW_PROTECT
+AUTHOR : JQT
+NAME : Measure
+VERSION : '1.0'
+
+VAR_INPUT
+    AI_Addr : INT ;
+    LENGTH : INT ;
+    DB_START_ADDR : INT ;
+    MEASURE_DB : BLOCK_DB ;                (* DB Type : UDT6 *)
+END_VAR
+
+VAR_TEMP    
+    Input : INT ;
+    RANGE_LO : REAL ;
+    RANGE_HI : REAL ;
+    HYS : REAL ;
+    OFFSET : REAL ;
+    ALM_1ST_SET : REAL ;
+    ALM_2ND_SET : REAL ;
+    ALM_DB : REAL ;
+    MAN_V : REAL ;
+    SUBST_V : REAL ;
+    LOCUT_V : REAL ;
+    PV : REAL ;
+    MSG : INT ;
+    MODE : INT ;    
+    MAN_EN : BOOL ;
+    SUBST_EN : BOOL ;
+    LOCUT_EN : BOOL ;
+    ALM_EN : BOOL ;
+    ALM_1ST_IN : BOOL ;
+    ALM_2ND_IN : BOOL ;
+    I_ERR_IN : BOOL ;
+    SET_ERR : BOOL ;
+    MSG_EN : BOOL ;
+    Calculate : REAL ;
+    Result : REAL ;
+    Index : INT ;
+    Byte_Index : INT ;
+    Lo_Temp : REAL ;
+    Hi_Temp : REAL ;
+
+   
+    
+END_VAR
+
+BEGIN ;
+
+    FOR Index := 0 TO (LENGTH - 1) DO
+        
+        Byte_Index := DB_START_ADDR + Index * 100 ;
+        Input := INT_TO_REAL(WORD_TO_INT(PIW[AI_Addr + (Index * 2)])) ; 
+  //      Input := PIW[AI_Addr + (Index * 2)] ; 
+  //      RANGE_LO := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 0]) ;
+  //      RANGE_HI := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 4]) ;
+  //      HYS := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 8]) ;
+  //      OFFSET := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 12]) ;
+  //      ALM_1ST_SET := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 16]) ;
+  //      ALM_2ND_SET := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 20]) ;
+  //      ALM_DB := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 24]) ;
+  //      MAN_V := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 28]) ;
+  //      SUBST_V := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 32]) ;
+  //      LOCUT_V := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 36]) ;
+  //      Calculate := DWORD_TO_REAL(MEASURE_DB.DD[Byte_Index + 40]) ;
+  //      MODE := WORD_TO_INT(MEASURE_DB.DW[Byte_Index + 46]) ;
+  //      MAN_EN := MEASURE_DB.DX[Byte_Index + 48 , 0] ;
+  //      SUBST_EN := MEASURE_DB.DX[Byte_Index + 48 , 1] ;
+  //      LOCUT_EN := MEASURE_DB.DX[Byte_Index + 48 , 2] ;
+  //      MSG_EN := MEASURE_DB.DX[Byte_Index + 48 , 3] ;
+  //      ALM_EN := MEASURE_DB.DX[Byte_Index + 48 , 4] ;
+  //      ALM_1ST_IN := MEASURE_DB.DX[Byte_Index + 48 , 5] ;
+  //      ALM_2ND_IN := MEASURE_DB.DX[Byte_Index + 48 , 6] ;
+
+         
+        IF Input > 31208.0 OR Input < 3121.0 THEN I_ERR_IN := True ; ELSE I_ERR_IN := False ; END_IF ;    (* Input Out of Range *)
+
+            IF Input <= 31208.0 AND Input >= 6241.0 THEN Result := ((Input - 6241.0) / 24967.0) * 32767.0 ; END_IF ;
+                IF Input > 31208.0 THEN Result := 32767.0 ; END_IF ;
+                IF Input < 6241.0 THEN Result := 0.0 ; END_IF ;
+        MSG =   
+        MEASURE_DB.DD[Byte_Index + 40] := REAL_TO_DWORD(Result);
+        MEASURE_DB.DW[Byte_Index + 44] := PIW[AI_Addr + (Index * 2)];
+        MEASURE_DB.DX[Byte_Index + 48 , 6] := ALM_2ND_IN ;
+        MEASURE_DB.DX[Byte_Index + 48 , 7] := I_ERR_IN ;
+        MEASURE_DB.DX[Byte_Index + 49 , 0] := SET_ERR ;       
+
+    END_FOR ;
+
+END_FUNCTION    
