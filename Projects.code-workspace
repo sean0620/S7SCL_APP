@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "S7SCL_APP",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
